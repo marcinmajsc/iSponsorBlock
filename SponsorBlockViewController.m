@@ -1,6 +1,3 @@
-
-#import "Headers/SponsorBlockViewController.h"
-
 #import "Headers/SponsorBlockViewController.h"
 #import "Headers/Localization.h"
 
@@ -8,7 +5,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = [UIColor whiteColor];
+    self.view.backgroundColor = [UIColor systemBackgroundColor];
     [self addChildViewController:self.playerViewController];
     [self.view addSubview:self.playerViewController.view];
     [self setupViews];
@@ -109,6 +106,7 @@
         
         for (int i = 0; i < self.sponsorSegmentViews.count; i++) {
             [self.segmentsInDatabaseLabel addSubview:self.sponsorSegmentViews[i]];
+            [self.sponsorSegmentViews[i] addInteraction:[[UIContextMenuInteraction alloc] initWithDelegate:self]];
             
             self.sponsorSegmentViews[i].translatesAutoresizingMaskIntoConstraints = NO;
             [self.sponsorSegmentViews[i].widthAnchor constraintEqualToConstant:playerView.frame.size.width/self.sponsorSegmentViews.count-10].active = YES;
@@ -139,6 +137,7 @@
         self.userSponsorSegmentViews = [self segmentViewsForSegments:self.playerViewController.userSkipSegments editable:YES];
         for (int i = 0; i < self.userSponsorSegmentViews.count; i++) {
             [self.userSegmentsLabel addSubview:self.userSponsorSegmentViews[i]];
+            [self.userSponsorSegmentViews[i] addInteraction:[[UIContextMenuInteraction alloc] initWithDelegate:self]];
             
             self.userSponsorSegmentViews[i].translatesAutoresizingMaskIntoConstraints = NO;
             [self.userSponsorSegmentViews[i].widthAnchor constraintEqualToConstant:playerView.frame.size.width/self.userSponsorSegmentViews.count-10].active = YES;
@@ -287,6 +286,7 @@
 }
 
 
+- (UIContextMenuConfiguration *)contextMenuInteraction:(UIContextMenuInteraction *)interaction
                         configurationForMenuAtLocation:(CGPoint)location {
     SponsorSegmentView *sponsorSegmentView = interaction.view;
 
@@ -355,7 +355,7 @@
         }]];
         NSMutableArray* actions = [NSMutableArray array];
         if (sponsorSegmentView.editable) {
-            [actions addObject:[UIAction actionWithTitle:LOC(@"EditStartTime") image:[UIImage imageNamed:@"arrow.left.to.line"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
+            [actions addObject:[UIAction actionWithTitle:LOC(@"EditStartTime") image:[UIImage systemImageNamed:@"arrow.left.to.line"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
                 UIAlertController *alert = [UIAlertController alertControllerWithTitle:LOC(@"Edit") message:LOC(@"EditStartTime_Desc") preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:LOC(@"OK") style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction * action) {
@@ -381,7 +381,7 @@
                 [self presentViewController:alert animated:YES completion:nil];
             }]];
             
-            [actions addObject:[UIAction actionWithTitle:LOC(@"EditEndTime") image:[UIImage imageNamed:@"arrow.right.to.line"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
+            [actions addObject:[UIAction actionWithTitle:LOC(@"EditEndTime") image:[UIImage systemImageNamed:@"arrow.right.to.line"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
                 UIAlertController *alert = [UIAlertController alertControllerWithTitle:LOC(@"Edit") message:LOC(@"EditEndTime_Desc") preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:LOC(@"OK") style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction * action) {
@@ -407,9 +407,9 @@
                 [self presentViewController:alert animated:YES completion:nil];
             }]];
             
-            UIMenu *categoriesMenu = [UIMenu menuWithTitle:LOC(@"EditCategory") image:[UIImage imageNamed:@"square.grid.2x2"] identifier:nil options:0 children:categoryActions];
+            UIMenu *categoriesMenu = [UIMenu menuWithTitle:LOC(@"EditCategory") image:[UIImage systemImageNamed:@"square.grid.2x2"] identifier:nil options:0 children:categoryActions];
             [actions addObject:categoriesMenu];
-            [actions addObject:[UIAction actionWithTitle:LOC(@"Delete") image:[UIImage imageNamed:@"trash"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
+            [actions addObject:[UIAction actionWithTitle:LOC(@"Delete") image:[UIImage systemImageNamed:@"trash"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
                 [self.playerViewController.userSkipSegments removeObject:sponsorSegmentView.sponsorSegment];
                 [self setupViews];
             }]];
@@ -418,56 +418,19 @@
             return menu;
         }
         else {
-            [actions addObject:[UIAction actionWithTitle:LOC(@"Upvote") image:[UIImage imageNamed:@"hand.thumbsup.fill"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
+            [actions addObject:[UIAction actionWithTitle:LOC(@"Upvote") image:[UIImage systemImageNamed:@"hand.thumbsup.fill"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
                 [SponsorBlockRequest normalVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] type:YES withViewController:self];
             }]];
             
-            [actions addObject:[UIAction actionWithTitle:LOC(@"Downvote") image:[UIImage imageNamed:@"hand.thumbsdown.fill"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
+            [actions addObject:[UIAction actionWithTitle:LOC(@"Downvote") image:[UIImage systemImageNamed:@"hand.thumbsdown.fill"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
                 [SponsorBlockRequest normalVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] type:NO withViewController:self];
             }]];
             
-            UIMenu *categoriesMenu = [UIMenu menuWithTitle:LOC(@"VoteToChangeCategory") image:[UIImage imageNamed:@"square.grid.2x2"] identifier:nil options:0 children:categoryActions];
+            UIMenu *categoriesMenu = [UIMenu menuWithTitle:LOC(@"VoteToChangeCategory") image:[UIImage systemImageNamed:@"square.grid.2x2"] identifier:nil options:0 children:categoryActions];
             UIMenu* menu = [UIMenu menuWithTitle:LOC(@"VoteOnSegment") children:[actions arrayByAddingObject:categoriesMenu]];
             return menu;
         }
     }];
     return config;
 }
-@end
-
-
-- (NSString *)getDocumentsDirectory {
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    return [paths firstObject];
-}
-
-- (NSMutableDictionary *)loadSettingsFromPlist {
-    NSString *documentsDirectory = [self getDocumentsDirectory];
-    NSString *path = [documentsDirectory stringByAppendingPathComponent:@"iSponsorBlock.plist"];
-    NSMutableDictionary *settings = [NSMutableDictionary dictionaryWithContentsOfFile:path];
-    if (!settings) {
-        settings = [NSMutableDictionary dictionary];
-    }
-    return settings;
-}
-
-
-
-- (void)setupViews {
-    // Stub implementation for setupViews
-}
-
-- (void)startEndSegmentButtonPressed:(UIButton *)sender {
-    // Stub implementation for startEndSegmentButtonPressed
-}
-
-- (NSMutableArray *)segmentViewsForSegments:(NSArray <SponsorSegment *> *)segments editable:(BOOL)editable {
-    // Stub implementation for segmentViewsForSegments
-    return [NSMutableArray array];
-}
-
-
-@implementation SponsorBlockViewController
-
-// Placeholder for additional methods
 @end
