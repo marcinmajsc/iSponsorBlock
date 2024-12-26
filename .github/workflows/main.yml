@@ -57,7 +57,7 @@ jobs:
       - name: Clone iSponsorBlock
         run: |
           cd ${{ github.workspace }}
-          git clone --quiet --depth=1 https://github.com/marcinmajsc/iSponsorBlock.git
+          git clone --quiet --depth=1 --recurse-submodules https://github.com/marcinmajsc/iSponsorBlock.git
 
       - name: Build iSponsorBlock
         run: |
