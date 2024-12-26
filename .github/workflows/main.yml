@@ -1,0 +1,80 @@
+name: Create iSponsorBlock .deb
+
+on:
+  workflow_dispatch:
+    inputs:
+
+      tweak_version:
+        description: "The version of the tweak"
+        default: "1.2.9"
+        required: true
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: 
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Main
+        uses: actions/checkout@v4.1.1
+        with:
+          path: main
+          submodules: recursive
+
+
+      - name: Install Dependencies
+        run: brew install make ldid
+
+      - name: Set PATH environment variable
+        run: echo "$(brew --prefix make)/libexec/gnubin" >> $GITHUB_PATH
+
+      - name: Cache Theos
+        id: theos
+        uses: actions/cache@v4.0.1
+        env:
+          cache-name: theos_cache_67db2ab
+        with:
+          path: theos/
+          key: ${{ env.cache-name }}
+          restore-keys: ${{ env.cache-name }}
+
+      - name: Setup Theos
+        if: steps.theos.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4.1.7
+        with:
+          repository: theos/theos
+          ref: 67db2ab8d950910161730de77c322658ea3e6b44
+          path: ${{ github.workspace }}/theos
+          submodules: recursive
+
+      - name: Clone iSponsorBlock
+        if: ${{ inputs.enable_youpip }}
+        run: |
+          cd ${{ github.workspace }}
+          git clone --quiet --depth=1 https://github.com/marcinmajsc/iSponsorBlock.git
+
+      - name: Build iSponsorBlock
+        run: |
+          cd ${{ github.workspace }}/iSponsorBlock
+          make clean package DEBUG=0 FINALPACKAGE=1
+          mv packages/*.deb ${{ github.workspace }}/iSponsorBlock_${{ inputs.tweak_version }}.deb
+        env:
+          THEOS: ${{ github.workspace }}/theos
+
+      - name: Upload to GitHub Releases
+        uses: softprops/action-gh-release@v2.0.1
+        with:
+          name: iSponsorBlock v${{ inputs.tweak_version }} (${{ github.run_number }})
+          files: iSponsorBlock_${{ inputs.tweak_version }}.deb
+          draft: true
+
+      - name: Output Release URL
+        run: |
+          echo "::notice::Release available at: https://github.com/${{ github.repository }}/releases"
