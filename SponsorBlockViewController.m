@@ -286,7 +286,6 @@
 }
 
 
-- (UIContextMenuConfiguration *)contextMenuInteraction:(UIContextMenuInteraction *)interaction
                         configurationForMenuAtLocation:(CGPoint)location {
     SponsorSegmentView *sponsorSegmentView = interaction.view;
 
@@ -296,7 +295,6 @@
     NSMutableDictionary *settings = [NSMutableDictionary dictionary];
     [settings addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:path]];
 
-    UIContextMenuConfiguration *config = [UIContextMenuConfiguration configurationWithIdentifier:nil
     previewProvider:nil
     actionProvider:^UIMenu* _Nullable(NSArray<UIMenuElement*>* _Nonnull suggestedActions) {
         NSMutableArray *categoryActions = [NSMutableArray array];
@@ -445,4 +443,20 @@
         CGPoint location = [gesture locationInView:self.view];
         // Implement your custom menu or action logic here.
     }
+}
+
+
+- (void)showCustomMenuAtLocation:(CGPoint)location {
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"" message:@"Custom Menu" preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertAction *action1 = [UIAlertAction actionWithTitle:@"Option 1" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        // Handle Option 1
+    }];
+    UIAlertAction *action2 = [UIAlertAction actionWithTitle:@"Option 2" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        // Handle Option 2
+    }];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
+    [alertController addAction:action1];
+    [alertController addAction:action2];
+    [alertController addAction:cancelAction];
+    [self presentViewController:alertController animated:YES completion:nil];
 }
