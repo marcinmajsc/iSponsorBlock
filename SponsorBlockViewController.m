@@ -43,12 +43,14 @@
         self.startEndSegmentButton = [UIButton buttonWithType:UIButtonTypeCustom];
         self.startEndSegmentButton.backgroundColor = [UIColor blueColor];
         [self.startEndSegmentButton addTarget:self action:@selector(startEndSegmentButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-        if (self.playerViewController.userSkipSegments.lastObject.endTime != -1) [self.startEndSegmentButton setTitle:LOC(@"SegmentStartsNow") forState:UIControlStateNormal];
-        else [self.startEndSegmentButton setTitle:LOC(@"SegmentEndsNow") forState:UIControlStateNormal];
+        if (self.playerViewController.userSkipSegments.lastObject.endTime != -1) {
+            [self.startEndSegmentButton setTitle:LOC(@"SegmentStartsNow") forState:UIControlStateNormal];
+        } else {
+            [self.startEndSegmentButton setTitle:LOC(@"SegmentEndsNow") forState:UIControlStateNormal];
+        }
         self.startEndSegmentButton.titleLabel.adjustsFontSizeToFitWidth = YES;
         [self.playerViewController.view addSubview:self.startEndSegmentButton];
         self.startEndSegmentButton.layer.cornerRadius = 12;
-        self.startEndSegmentButton.frame = CGRectMake(0,0,512,50);
         self.startEndSegmentButton.translatesAutoresizingMaskIntoConstraints = NO;
         [self.startEndSegmentButton.topAnchor constraintEqualToAnchor:self.playerViewController.view.bottomAnchor constant:10].active = YES;
         [self.startEndSegmentButton.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor].active = YES;
@@ -76,8 +78,7 @@
 
     if ([kWhitelistedChannels containsObject:self.playerViewController.channelID]) {
         [whitelistSwitch setOn:YES animated:NO];
-    }
-    else {
+    } else {
         [whitelistSwitch setOn:NO animated:NO];
     }
 
@@ -110,8 +111,7 @@
             }
             if (i > 0) {
                 [self.sponsorSegmentViews[i].leftAnchor constraintEqualToAnchor:self.sponsorSegmentViews[i-1].rightAnchor constant:5].active = YES;
-            }
-            else {
+            } else {
                 [self.sponsorSegmentViews[i].leftAnchor constraintEqualToAnchor:self.segmentsInDatabaseLabel.leftAnchor constant:5*(self.sponsorSegmentViews.count / 2)].active = YES;
             }
         }
@@ -134,8 +134,7 @@
             }
             if (i > 0) {
                 [self.userSponsorSegmentViews[i].leftAnchor constraintEqualToAnchor:self.userSponsorSegmentViews[i-1].rightAnchor constant:5].active = YES;
-            }
-            else {
+            } else {
                 [self.userSponsorSegmentViews[i].leftAnchor constraintEqualToAnchor:self.userSegmentsLabel.leftAnchor constant:5*(self.userSponsorSegmentViews.count / 2)].active = YES;
             }
         }
@@ -144,8 +143,11 @@
         self.userSegmentsLabel.textAlignment = NSTextAlignmentCenter;
         [playerView addSubview:self.userSegmentsLabel];
         self.userSegmentsLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        if (skipSegments.count > 0) [self.userSegmentsLabel.topAnchor constraintEqualToAnchor:self.segmentsInDatabaseLabel.bottomAnchor constant:-10].active = YES;
-        else [self.userSegmentsLabel.topAnchor constraintEqualToAnchor:self.whitelistChannelLabel.bottomAnchor constant:-10].active = YES;
+        if (skipSegments.count > 0) {
+            [self.userSegmentsLabel.topAnchor constraintEqualToAnchor:self.segmentsInDatabaseLabel.bottomAnchor constant:-10].active = YES;
+        } else {
+            [self.userSegmentsLabel.topAnchor constraintEqualToAnchor:self.whitelistChannelLabel.bottomAnchor constant:-10].active = YES;
+        }
         [self.userSegmentsLabel.centerXAnchor constraintEqualToAnchor:playerView.centerXAnchor].active = YES;
         [self.userSegmentsLabel.widthAnchor constraintEqualToAnchor:playerView.widthAnchor].active = YES;
         [self.userSegmentsLabel.heightAnchor constraintEqualToConstant:75.0f].active = YES;
@@ -156,7 +158,6 @@
         [self.submitSegmentsButton setTitle:LOC(@"SubmitSegments") forState:UIControlStateNormal];
         [playerView addSubview:self.submitSegmentsButton];
         self.submitSegmentsButton.layer.cornerRadius = 12;
-        self.submitSegmentsButton.frame = CGRectMake(0,0,512,50);
         self.submitSegmentsButton.translatesAutoresizingMaskIntoConstraints = NO;
         [self.submitSegmentsButton.topAnchor constraintEqualToAnchor:self.userSegmentsLabel.bottomAnchor constant:15].active = YES;
         [self.submitSegmentsButton.centerXAnchor constraintEqualToAnchor:playerView.centerXAnchor].active = YES;
@@ -264,4 +265,7 @@
     NSMutableDictionary *settings = [NSMutableDictionary dictionary];
     [settings addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:settingsPath]];
     [settings setValue:kWhitelistedChannels forKey:@"whitelistedChannels"];
-   
+    [settings writeToURL:[NSURL fileURLWithPath:settingsPath] atomically:YES];
+}
+
+@end
