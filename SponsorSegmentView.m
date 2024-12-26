@@ -76,7 +76,7 @@
         [self.categoryLabel.heightAnchor constraintEqualToConstant:self.frame.size.height/2].active = YES;
         [self.categoryLabel.topAnchor constraintEqualToAnchor:self.segmentLabel.bottomAnchor].active = YES;
         
-        self.backgroundColor = UIColor.systemGray4Color;
+        self.backgroundColor = [UIColor lightGrayColor];
         self.layer.cornerRadius = 10;
         self.segmentLabel.layer.cornerRadius = 10;
         self.categoryLabel.layer.cornerRadius = 10;
