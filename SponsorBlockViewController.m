@@ -5,7 +5,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = [UIColor systemBackgroundColor];
+    self.view.backgroundColor = [UIColor whiteColor];
     [self addChildViewController:self.playerViewController];
     [self.view addSubview:self.playerViewController.view];
     [self setupViews];
