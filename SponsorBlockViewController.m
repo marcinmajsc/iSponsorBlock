@@ -1,12 +1,14 @@
 
 #import "Headers/SponsorBlockViewController.h"
+
+#import "Headers/SponsorBlockViewController.h"
 #import "Headers/Localization.h"
 
 @implementation SponsorBlockViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = [UIColor systemBackgroundColor];
+    self.view.backgroundColor = [UIColor whiteColor];
     [self addChildViewController:self.playerViewController];
     [self.view addSubview:self.playerViewController.view];
     [self setupViews];
@@ -107,7 +109,6 @@
         
         for (int i = 0; i < self.sponsorSegmentViews.count; i++) {
             [self.segmentsInDatabaseLabel addSubview:self.sponsorSegmentViews[i]];
-            [self.sponsorSegmentViews[i] addInteraction:[[ alloc] initWithDelegate:self]];
             
             self.sponsorSegmentViews[i].translatesAutoresizingMaskIntoConstraints = NO;
             [self.sponsorSegmentViews[i].widthAnchor constraintEqualToConstant:playerView.frame.size.width/self.sponsorSegmentViews.count-10].active = YES;
@@ -138,7 +139,6 @@
         self.userSponsorSegmentViews = [self segmentViewsForSegments:self.playerViewController.userSkipSegments editable:YES];
         for (int i = 0; i < self.userSponsorSegmentViews.count; i++) {
             [self.userSegmentsLabel addSubview:self.userSponsorSegmentViews[i]];
-            [self.userSponsorSegmentViews[i] addInteraction:[[ alloc] initWithDelegate:self]];
             
             self.userSponsorSegmentViews[i].translatesAutoresizingMaskIntoConstraints = NO;
             [self.userSponsorSegmentViews[i].widthAnchor constraintEqualToConstant:playerView.frame.size.width/self.userSponsorSegmentViews.count-10].active = YES;
@@ -287,7 +287,6 @@
 }
 
 
-- ( *):( *)interaction
                         configurationForMenuAtLocation:(CGPoint)location {
     SponsorSegmentView *sponsorSegmentView = interaction.view;
 
@@ -297,7 +296,7 @@
     NSMutableDictionary *settings = [NSMutableDictionary dictionary];
     [settings addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:path]];
 
-     *config = [ configurationWithIdentifier:nil
+    UIContextMenuConfiguration *config = [UIContextMenuConfiguration configurationWithIdentifier:nil
     previewProvider:nil
     actionProvider:^UIMenu* _Nullable(NSArray<UIMenuElement*>* _Nonnull suggestedActions) {
         NSMutableArray *categoryActions = [NSMutableArray array];
@@ -454,32 +453,21 @@
 
 
 
+- (void)setupViews {
+    // Stub implementation for setupViews
+}
+
+- (void)startEndSegmentButtonPressed:(UIButton *)sender {
+    // Stub implementation for startEndSegmentButtonPressed
+}
+
+- (NSMutableArray *)segmentViewsForSegments:(NSArray <SponsorSegment *> *)segments editable:(BOOL)editable {
+    // Stub implementation for segmentViewsForSegments
+    return [NSMutableArray array];
+}
+
+
 @implementation SponsorBlockViewController
 
-- (void)setupLongPressGestureForSponsorSegmentViews {
-    for (UIView *sponsorSegmentView in self.sponsorSegmentViews) {
-        UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
-        [sponsorSegmentView addGestureRecognizer:longPressRecognizer];
-    }
-}
-
-- (void)handleLongPress:(UILongPressGestureRecognizer *)gesture {
-    if (gesture.state == UIGestureRecognizerStateBegan) {
-        CGPoint location = [gesture locationInView:gesture.view];
-        [self showCustomMenuAtLocation:location];
-    }
-}
-
-- (void)showCustomMenuAtLocation:(CGPoint)location {
-    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"" message:@"Custom Menu" preferredStyle:UIAlertControllerStyleActionSheet];
-    UIAlertAction *sponsorAction = [UIAlertAction actionWithTitle:@"Sponsor" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        NSLog(@"Sponsor selected");
-    }];
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
-    [alertController addAction:sponsorAction];
-    [alertController addAction:cancelAction];
-    [self presentViewController:alertController animated:YES completion:nil];
-}
-
+// Placeholder for additional methods
 @end
-
