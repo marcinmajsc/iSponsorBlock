@@ -435,9 +435,14 @@
 }
 @end
 
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
-- (nullable UIContextMenuConfiguration *)contextMenuInteraction:(UIContextMenuInteraction *)interaction
-                                 configurationForMenuAtLocation:(CGPoint)location {
-    return nil; // Return appropriate configuration if necessary
+- (void)setupLongPressGesture {
+    UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
+    [self.view addGestureRecognizer:longPressRecognizer];
 }
-#endif
+
+- (void)handleLongPress:(UILongPressGestureRecognizer *)gesture {
+    if (gesture.state == UIGestureRecognizerStateBegan) {
+        CGPoint location = [gesture locationInView:self.view];
+        // Implement your custom menu or action logic here.
+    }
+}
