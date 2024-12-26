@@ -284,6 +284,8 @@
 }
 
 
+                        configurationForMenuAtLocation:(CGPoint)location {
+    SponsorSegmentView *sponsorSegmentView = interaction.view;
 
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *documentsDirectory = [paths objectAtIndex:0];
@@ -291,7 +293,7 @@
     NSMutableDictionary *settings = [NSMutableDictionary dictionary];
     [settings addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:path]];
 
-    actionProvider:^UIMenu* _Nullable(NSArray<UIMenuElement*>* _Nonnull suggestedActions) {
+    previewProvider:nil
         NSMutableArray *categoryActions = [NSMutableArray array];
         [categoryActions addObject:[UIAction actionWithTitle:LOC(@"Sponsor") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
             if (sponsorSegmentView.editable) {
@@ -400,14 +402,12 @@
                 [self presentViewController:alert animated:YES completion:nil];
             }]];
             
-            UIMenu *categoriesMenu = [UIMenu menuWithTitle:LOC(@"EditCategory") image:[UIImage systemImageNamed:@"square.grid.2x2"] identifier:nil options:0 children:categoryActions];
             [actions addObject:categoriesMenu];
             [actions addObject:[UIAction actionWithTitle:LOC(@"Delete") image:[UIImage systemImageNamed:@"trash"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
                 [self.playerViewController.userSkipSegments removeObject:sponsorSegmentView.sponsorSegment];
                 [self setupViews];
             }]];
             
-            UIMenu* menu = [UIMenu menuWithTitle:LOC(@"EditSegment") children:actions];
             return menu;
         }
         else {
@@ -419,8 +419,6 @@
                 [SponsorBlockRequest normalVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] type:NO withViewController:self];
             }]];
             
-            UIMenu *categoriesMenu = [UIMenu menuWithTitle:LOC(@"VoteToChangeCategory") image:[UIImage systemImageNamed:@"square.grid.2x2"] identifier:nil options:0 children:categoryActions];
-            UIMenu* menu = [UIMenu menuWithTitle:LOC(@"VoteOnSegment") children:[actions arrayByAddingObject:categoriesMenu]];
             return menu;
         }
     }];
@@ -457,6 +455,38 @@
 }
 
 
+- (NSString *)getDocumentsDirectory {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    return [paths firstObject];
+}
+
+- (NSMutableDictionary *)loadSettingsFromPlist {
+    NSString *documentsDirectory = [self getDocumentsDirectory];
+    NSString *path = [documentsDirectory stringByAppendingPathComponent:@"iSponsorBlock.plist"];
+    NSMutableDictionary *settings = [NSMutableDictionary dictionaryWithContentsOfFile:path];
+    if (!settings) {
+        settings = [NSMutableDictionary dictionary];
+    }
+    return settings;
+}
+
+
+- (void)showCustomMenuAtLocation:(CGPoint)location {
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"" message:@"Custom Menu" preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertAction *option1 = [UIAlertAction actionWithTitle:@"Option 1" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        // Handle Option 1
+    }];
+    UIAlertAction *option2 = [UIAlertAction actionWithTitle:@"Option 2" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        // Handle Option 2
+    }];
+    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
+    [alertController addAction:option1];
+    [alertController addAction:option2];
+    [alertController addAction:cancel];
+    [self presentViewController:alertController animated:YES completion:nil];
+}
+
+
 - (void)setupLongPressGestureForSponsorSegmentViews {
     for (UIView *sponsorSegmentView in self.sponsorSegmentViews) {
         UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
@@ -469,20 +499,4 @@
         CGPoint location = [gesture locationInView:gesture.view];
         [self showCustomMenuAtLocation:location];
     }
-}
-
-
-- (NSString *)getDocumentsDirectory {
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    return [paths objectAtIndex:0];
-}
-
-- (NSMutableDictionary *)loadSettingsFromPlist {
-    NSString *documentsDirectory = [self getDocumentsDirectory];
-    NSString *path = [documentsDirectory stringByAppendingPathComponent:@"iSponsorBlock.plist"];
-    NSMutableDictionary *settings = [NSMutableDictionary dictionaryWithContentsOfFile:path];
-    if (!settings) {
-        settings = [NSMutableDictionary dictionary];
-    }
-    return settings;
 }
