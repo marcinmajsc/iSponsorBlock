@@ -1,9 +1,5 @@
-ifeq ($(ROOTLESS),1)
-THEOS_PACKAGE_SCHEME=rootless
-endif
-
 export ARCHS = arm64
-TARGET := iphone:clang:latest:11.0
+TARGET := iphone:clang:latest:12.0
 INSTALL_TARGET_PROCESSES = YouTube
 
 include $(THEOS)/makefiles/common.mk
