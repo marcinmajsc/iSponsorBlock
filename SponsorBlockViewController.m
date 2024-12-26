@@ -214,20 +214,30 @@
     }
 }
 
-- (void)whitelistSwitchToggled:(UISwitch *)sender {
-    if (sender.isOn) {
-        [kWhitelistedChannels addObject:self.playerViewController.channelID];
+- (void)startEndSegmentButtonPressed:(UIButton *)sender {
+    NSString *segmentStartsNowTitle = LOC(@"SegmentStartsNow");
+    NSString *segmentEndsNowTitle = LOC(@"SegmentEndsNow");
+    NSString *errorTitle = LOC(@"Error");
+    NSString *okTitle = LOC(@"OK");
+    NSInteger minutes = lroundf(self.playerViewController.userSkipSegments.lastObject.startTime)/60;
+    NSInteger seconds = lroundf(self.playerViewController.userSkipSegments.lastObject.startTime)%60;
+    NSString *errorMessage = [NSString stringWithFormat:@"%@ %ld:%02ld", LOC(@"EndTimeLessThanStartTime"), minutes, seconds];
+
+    if ([sender.titleLabel.text isEqualToString:segmentStartsNowTitle]) {
+        [self.playerViewController.userSkipSegments addObject:[[SponsorSegment alloc] initWithStartTime:self.playerViewController.currentVideoMediaTime endTime:-1 category:nil UUID:nil]];
+        [sender setTitle:segmentEndsNowTitle forState:UIControlStateNormal];
     } else {
-        [kWhitelistedChannels removeObject:self.playerViewController.channelID];
+        self.playerViewController.userSkipSegments.lastObject.endTime = self.playerViewController.currentVideoMediaTime;
+        if (self.playerViewController.userSkipSegments.lastObject.endTime != self.playerViewController.currentVideoMediaTime) {
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:errorTitle message:errorMessage preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:okTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {}];
+            [alert addAction:defaultAction];
+            [self presentViewController:alert animated:YES completion:nil];
+            return;
+        }
+        [sender setTitle:segmentStartsNowTitle forState:UIControlStateNormal];
     }
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *documentsDirectory = [paths objectAtIndex:0];
-    NSString *settingsPath = [documentsDirectory stringByAppendingPathComponent:@"iSponsorBlock.plist"];
-    NSMutableDictionary *settings = [NSMutableDictionary dictionary];
-    [settings addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:settingsPath]];
-    [settings setValue:kWhitelistedChannels forKey:@"whitelistedChannels"];
-    [settings writeToURL:[NSURL fileURLWithPath:settingsPath isDirectory:NO] error:nil];
-    CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR("com.galacticdev.isponsorblockprefs.changed"), NULL, NULL, YES);
+    [self setupViews];
 }
 
 - (NSMutableArray *)segmentViewsForSegments:(NSArray <SponsorSegment *> *)segments editable:(BOOL)editable {
@@ -242,4 +252,16 @@
     return self.userSponsorSegmentViews;
 }
 
-@end
+- (void)whitelistSwitchToggled:(UISwitch *)sender {
+    if (sender.isOn) {
+        [kWhitelistedChannels addObject:self.playerViewController.channelID];
+    } else {
+        [kWhitelistedChannels removeObject:self.playerViewController.channelID];
+    }
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *settingsPath = [documentsDirectory stringByAppendingPathComponent:@"iSponsorBlock.plist"];
+    NSMutableDictionary *settings = [NSMutableDictionary dictionary];
+    [settings addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:settingsPath]];
+    [settings setValue:kWhitelistedChannels forKey:@"whitelistedChannels"];
+   
