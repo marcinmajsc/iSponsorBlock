@@ -107,10 +107,7 @@ void currentVideoTimeDidChange(YTPlayerViewController *self, YTSingleVideoTime *
                     self.hud.label.numberOfLines = 0;
                     [self.hud.button setTitle:LOC(@"Skip") forState:UIControlStateNormal];
                     [self.hud.button addTarget:self action:@selector(manuallySkipSegment:) forControlEvents:UIControlEventTouchUpInside];
-                    // Add custom button to hide HUD
                     UIButton *cancelButton = [UIButton buttonWithType:UIButtonTypeSystem];
-                    UIImage *cancelImage = [[UIImage systemImageNamed:@"x.circle"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-                    [cancelButton setImage:cancelImage forState:UIControlStateNormal];
                     [cancelButton setTintColor:[[UIColor blackColor] colorWithAlphaComponent:0.7]];
                     [cancelButton addTarget:self action:@selector(cancelHUD:) forControlEvents:UIControlEventTouchUpInside];
 
@@ -872,10 +869,7 @@ AVQueuePlayer *queuePlayer;
                         weakSelf.hud.label.numberOfLines = 0;
                         [weakSelf.hud.button setTitle:LOC(@"Skip") forState:UIControlStateNormal];
                         [weakSelf.hud.button addTarget:weakSelf action:@selector(manuallySkipSegment:) forControlEvents:UIControlEventTouchUpInside];
-                        // Add custom button to hide HUD
                         UIButton *cancelButton = [UIButton buttonWithType:UIButtonTypeSystem];
-                        UIImage *cancelImage = [[UIImage systemImageNamed:@"x.circle"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-                        [cancelButton setImage:cancelImage forState:UIControlStateNormal];
                         [cancelButton setTintColor:[[UIColor blackColor] colorWithAlphaComponent:0.7]];
                         [cancelButton addTarget:weakSelf action:@selector(cancelHUD:) forControlEvents:UIControlEventTouchUpInside];
 
@@ -979,8 +973,7 @@ NSInteger pageStyle = 0;
         }
         else { //light mode
             UIImage *image = [UIImage imageWithContentsOfFile:[tweakBundle pathForResource:@"sponsorblocksettings-20@2x" ofType:@"png"]];
-            image = [image imageWithTintColor:UIColor.blackColor renderingMode:UIImageRenderingModeAlwaysTemplate];
-            [self.sponsorBlockButton setImage:image forState:UIControlStateNormal];
+            image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]; // iOS 12.4 fallback[self.sponsorBlockButton setImage:image forState:UIControlStateNormal];
             [self.sponsorBlockButton setTintColor:UIColor.blackColor];
         }
         pageStyle = [%c(YTPageStyleController) pageStyle];
@@ -1132,3 +1125,4 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer, CFStrin
         }
     }
 }
+ 
