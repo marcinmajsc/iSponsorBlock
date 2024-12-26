@@ -286,151 +286,76 @@
 }
 
 
-- (UIContextMenuConfiguration *)contextMenuInteraction:(UIContextMenuInteraction *)interaction
-                        configurationForMenuAtLocation:(CGPoint)location {
-    SponsorSegmentView *sponsorSegmentView = interaction.view;
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    // Dodanie obsługi długiego naciśnięcia
+    UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
+    [self.view addGestureRecognizer:longPressGesture];
+}
 
+- (void)handleLongPress:(UILongPressGestureRecognizer *)gestureRecognizer {
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
+        CGPoint location = [gestureRecognizer locationInView:self.view];
+        SponsorSegmentView *sponsorSegmentView = (SponsorSegmentView *)[self.view hitTest:location withEvent:nil];
+        
+        if ([sponsorSegmentView isKindOfClass:[SponsorSegmentView class]]) {
+            [self showMenuForSponsorSegmentView:sponsorSegmentView];
+        }
+    }
+}
+
+- (void)showMenuForSponsorSegmentView:(SponsorSegmentView *)sponsorSegmentView {
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *documentsDirectory = [paths objectAtIndex:0];
     NSString *path = [documentsDirectory stringByAppendingPathComponent:@"iSponsorBlock.plist"];
     NSMutableDictionary *settings = [NSMutableDictionary dictionary];
     [settings addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:path]];
 
-    UIContextMenuConfiguration *config = [UIContextMenuConfiguration configurationWithIdentifier:nil
-    previewProvider:nil
-    actionProvider:^UIMenu* _Nullable(NSArray<UIMenuElement*>* _Nonnull suggestedActions) {
-        NSMutableArray *categoryActions = [NSMutableArray array];
-        [categoryActions addObject:[UIAction actionWithTitle:LOC(@"Sponsor") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
-            if (sponsorSegmentView.editable) {
-                sponsorSegmentView.sponsorSegment.category = @"sponsor";
-                [self setupViews];
-                return;
-            }
-            [SponsorBlockRequest categoryVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] category:@"sponsor" withViewController:self];
-        }]];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:LOC(@"Actions")
+                                                                   message:nil
+                                                            preferredStyle:UIAlertControllerStyleActionSheet];
 
-        [categoryActions addObject:[UIAction actionWithTitle:LOC(@"Intermission/IntroAnimation") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
-            if (sponsorSegmentView.editable) {
-                sponsorSegmentView.sponsorSegment.category = @"intro";
-                [self setupViews];
-                return;
-            }
-            [SponsorBlockRequest categoryVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] category:@"intro" withViewController:self];
-        }]];
+    // Akcje edycji kategorii
+    [alert addAction:[UIAlertAction actionWithTitle:LOC(@"Sponsor") style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [self updateCategory:@"sponsor" forSegmentView:sponsorSegmentView withSettings:settings];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:LOC(@"Intermission/IntroAnimation") style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [self updateCategory:@"intro" forSegmentView:sponsorSegmentView withSettings:settings];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:LOC(@"Outro") style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [self updateCategory:@"outro" forSegmentView:sponsorSegmentView withSettings:settings];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:LOC(@"InteractionReminder_Subcribe/Like") style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [self updateCategory:@"interaction" forSegmentView:sponsorSegmentView withSettings:settings];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:LOC(@"Unpaid/SelfPromotion") style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [self updateCategory:@"selfpromo" forSegmentView:sponsorSegmentView withSettings:settings];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:LOC(@"Non-MusicSection") style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [self updateCategory:@"music_offtopic" forSegmentView:sponsorSegmentView withSettings:settings];
+    }]];
 
-        [categoryActions addObject:[UIAction actionWithTitle:LOC(@"Outro") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
-            if (sponsorSegmentView.editable) {
-                sponsorSegmentView.sponsorSegment.category = @"outro";
-                [self setupViews];
-                return;
-            }
-            [SponsorBlockRequest categoryVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] category:@"outro" withViewController:self];
-        }]];
+    // Akcja usuwania segmentu
+    [alert addAction:[UIAlertAction actionWithTitle:LOC(@"Delete") style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+        [self.playerViewController.userSkipSegments removeObject:sponsorSegmentView.sponsorSegment];
+        [self setupViews];
+    }]];
 
-        [categoryActions addObject:[UIAction actionWithTitle:LOC(@"InteractionReminder_Subcribe/Like") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
-            if (sponsorSegmentView.editable) {
-                sponsorSegmentView.sponsorSegment.category = @"interaction";
-                [self setupViews];
-                return;
-            }
-            [SponsorBlockRequest categoryVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] category:@"interaction" withViewController:self];
-        }]];
+    // Dodaj opcję anulowania
+    [alert addAction:[UIAlertAction actionWithTitle:LOC(@"Cancel") style:UIAlertActionStyleCancel handler:nil]];
 
-        [categoryActions addObject:[UIAction actionWithTitle:LOC(@"Unpaid/SelfPromotion") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
-            if (sponsorSegmentView.editable) {
-                sponsorSegmentView.sponsorSegment.category = @"selfpromo";
-                [self setupViews];
-                return;
-            }
-            [SponsorBlockRequest categoryVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] category:@"selfpromo" withViewController:self];
-        }]];
-
-        [categoryActions addObject:[UIAction actionWithTitle:LOC(@"Non-MusicSection") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
-            if (sponsorSegmentView.editable) {
-                sponsorSegmentView.sponsorSegment.category = @"music_offtopic";
-                [self setupViews];
-                return;
-            }
-            [SponsorBlockRequest categoryVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] category:@"music_offtopic" withViewController:self];
-        }]];
-        NSMutableArray* actions = [NSMutableArray array];
-        if (sponsorSegmentView.editable) {
-            [actions addObject:[UIAction actionWithTitle:LOC(@"EditStartTime") image:[UIImage systemImageNamed:@"arrow.left.to.line"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
-                UIAlertController *alert = [UIAlertController alertControllerWithTitle:LOC(@"Edit") message:LOC(@"EditStartTime_Desc") preferredStyle:UIAlertControllerStyleAlert];
-                UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:LOC(@"OK") style:UIAlertActionStyleDefault
-                handler:^(UIAlertAction * action) {
-                    NSNumberFormatter *f = [[NSNumberFormatter alloc] init];
-                    f.numberStyle = NSNumberFormatterDecimalStyle;
-                    
-                    NSArray *strings = [alert.textFields[0].text componentsSeparatedByString:@":"];
-                    if (strings.count != 2) return;
-                    NSString *minutesString = strings[0];
-                    NSString *secondsString = strings[1];
-                    
-                    CGFloat minutes = [[f numberFromString:minutesString] floatValue];
-                    CGFloat seconds = [[f numberFromString:secondsString] floatValue];
-                    sponsorSegmentView.sponsorSegment.startTime = (minutes*60)+seconds;
-                    [self setupViews];
-                }];
-                UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:LOC(@"Cancel") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-                    
-                }];
-                [alert addAction:defaultAction];
-                [alert addAction:cancelAction];
-                [alert addTextFieldWithConfigurationHandler:nil];
-                [self presentViewController:alert animated:YES completion:nil];
-            }]];
-            
-            [actions addObject:[UIAction actionWithTitle:LOC(@"EditEndTime") image:[UIImage systemImageNamed:@"arrow.right.to.line"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
-                UIAlertController *alert = [UIAlertController alertControllerWithTitle:LOC(@"Edit") message:LOC(@"EditEndTime_Desc") preferredStyle:UIAlertControllerStyleAlert];
-                UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:LOC(@"OK") style:UIAlertActionStyleDefault
-                handler:^(UIAlertAction * action) {
-                    NSNumberFormatter *f = [[NSNumberFormatter alloc] init];
-                    f.numberStyle = NSNumberFormatterDecimalStyle;
-                    
-                    NSArray *strings = [alert.textFields[0].text componentsSeparatedByString:@":"];
-                    if (strings.count != 2) return;
-                    NSString *minutesString = strings[0];
-                    NSString *secondsString = strings[1];
-                    
-                    CGFloat minutes = [[f numberFromString:minutesString] floatValue];
-                    CGFloat seconds = [[f numberFromString:secondsString] floatValue];
-                    sponsorSegmentView.sponsorSegment.endTime = (minutes*60)+seconds;
-                    [self setupViews];
-                }];
-                UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:LOC(@"Cancel") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-                    
-                }];
-                [alert addAction:defaultAction];
-                [alert addAction:cancelAction];
-                [alert addTextFieldWithConfigurationHandler:nil];
-                [self presentViewController:alert animated:YES completion:nil];
-            }]];
-            
-            UIMenu *categoriesMenu = [UIMenu menuWithTitle:LOC(@"EditCategory") image:[UIImage systemImageNamed:@"square.grid.2x2"] identifier:nil options:0 children:categoryActions];
-            [actions addObject:categoriesMenu];
-            [actions addObject:[UIAction actionWithTitle:LOC(@"Delete") image:[UIImage systemImageNamed:@"trash"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
-                [self.playerViewController.userSkipSegments removeObject:sponsorSegmentView.sponsorSegment];
-                [self setupViews];
-            }]];
-            
-            UIMenu* menu = [UIMenu menuWithTitle:LOC(@"EditSegment") children:actions];
-            return menu;
-        }
-        else {
-            [actions addObject:[UIAction actionWithTitle:LOC(@"Upvote") image:[UIImage systemImageNamed:@"hand.thumbsup.fill"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
-                [SponsorBlockRequest normalVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] type:YES withViewController:self];
-            }]];
-            
-            [actions addObject:[UIAction actionWithTitle:LOC(@"Downvote") image:[UIImage systemImageNamed:@"hand.thumbsdown.fill"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
-                [SponsorBlockRequest normalVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] type:NO withViewController:self];
-            }]];
-            
-            UIMenu *categoriesMenu = [UIMenu menuWithTitle:LOC(@"VoteToChangeCategory") image:[UIImage systemImageNamed:@"square.grid.2x2"] identifier:nil options:0 children:categoryActions];
-            UIMenu* menu = [UIMenu menuWithTitle:LOC(@"VoteOnSegment") children:[actions arrayByAddingObject:categoriesMenu]];
-            return menu;
-        }
-    }];
-    return config;
+    [self presentViewController:alert animated:YES completion:nil];
 }
-@end
+
+- (void)updateCategory:(NSString *)category forSegmentView:(SponsorSegmentView *)sponsorSegmentView withSettings:(NSDictionary *)settings {
+    if (sponsorSegmentView.editable) {
+        sponsorSegmentView.sponsorSegment.category = category;
+        [self setupViews];
+    } else {
+        [SponsorBlockRequest categoryVoteForSegment:sponsorSegmentView.sponsorSegment
+                                             userID:settings[@"userID"]
+                                           category:category
+                                 withViewController:self];
+    }
+}
