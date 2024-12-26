@@ -56,7 +56,7 @@
     self.settings = [NSMutableDictionary dictionary];
     [self.settings addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:self.settingsPath]];
 
-    self.view.backgroundColor = UIColor.backgroundColor;
+    self.view.backgroundColor = [UIColor whiteColor];
 
     //detects if device is an se gen 1 or not, crude fix for text getting cut off
     if ([UIScreen mainScreen].bounds.size.width > 320) {
