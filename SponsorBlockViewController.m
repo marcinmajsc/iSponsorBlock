@@ -1,3 +1,4 @@
+
 #import "Headers/SponsorBlockViewController.h"
 #import "Headers/Localization.h"
 
@@ -5,7 +6,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = [UIColor whiteColor];
+    self.view.backgroundColor = [UIColor systemBackgroundColor];
     [self addChildViewController:self.playerViewController];
     [self.view addSubview:self.playerViewController.view];
     [self setupViews];
@@ -106,6 +107,7 @@
         
         for (int i = 0; i < self.sponsorSegmentViews.count; i++) {
             [self.segmentsInDatabaseLabel addSubview:self.sponsorSegmentViews[i]];
+            [self.sponsorSegmentViews[i] addInteraction:[[UIContextMenuInteraction alloc] initWithDelegate:self]];
             
             self.sponsorSegmentViews[i].translatesAutoresizingMaskIntoConstraints = NO;
             [self.sponsorSegmentViews[i].widthAnchor constraintEqualToConstant:playerView.frame.size.width/self.sponsorSegmentViews.count-10].active = YES;
@@ -136,6 +138,7 @@
         self.userSponsorSegmentViews = [self segmentViewsForSegments:self.playerViewController.userSkipSegments editable:YES];
         for (int i = 0; i < self.userSponsorSegmentViews.count; i++) {
             [self.userSegmentsLabel addSubview:self.userSponsorSegmentViews[i]];
+            [self.userSponsorSegmentViews[i] addInteraction:[[UIContextMenuInteraction alloc] initWithDelegate:self]];
             
             self.userSponsorSegmentViews[i].translatesAutoresizingMaskIntoConstraints = NO;
             [self.userSponsorSegmentViews[i].widthAnchor constraintEqualToConstant:playerView.frame.size.width/self.userSponsorSegmentViews.count-10].active = YES;
@@ -284,6 +287,9 @@
 }
 
 
+- (UIContextMenuConfiguration *)contextMenuInteraction:(UIContextMenuInteraction *)interaction
+                        configurationForMenuAtLocation:(CGPoint)location {
+    SponsorSegmentView *sponsorSegmentView = interaction.view;
 
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *documentsDirectory = [paths objectAtIndex:0];
@@ -291,6 +297,11 @@
     NSMutableDictionary *settings = [NSMutableDictionary dictionary];
     [settings addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:path]];
 
+    UIContextMenuConfiguration *config = [UIContextMenuConfiguration configurationWithIdentifier:nil
+    previewProvider:nil
+    actionProvider:^UIMenu* _Nullable(NSArray<UIMenuElement*>* _Nonnull suggestedActions) {
+        NSMutableArray *categoryActions = [NSMutableArray array];
+        [categoryActions addObject:[UIAction actionWithTitle:LOC(@"Sponsor") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
             if (sponsorSegmentView.editable) {
                 sponsorSegmentView.sponsorSegment.category = @"sponsor";
                 [self setupViews];
@@ -299,6 +310,7 @@
             [SponsorBlockRequest categoryVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] category:@"sponsor" withViewController:self];
         }]];
 
+        [categoryActions addObject:[UIAction actionWithTitle:LOC(@"Intermission/IntroAnimation") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
             if (sponsorSegmentView.editable) {
                 sponsorSegmentView.sponsorSegment.category = @"intro";
                 [self setupViews];
@@ -307,6 +319,7 @@
             [SponsorBlockRequest categoryVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] category:@"intro" withViewController:self];
         }]];
 
+        [categoryActions addObject:[UIAction actionWithTitle:LOC(@"Outro") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
             if (sponsorSegmentView.editable) {
                 sponsorSegmentView.sponsorSegment.category = @"outro";
                 [self setupViews];
@@ -315,12 +328,16 @@
             [SponsorBlockRequest categoryVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] category:@"outro" withViewController:self];
         }]];
 
+        [categoryActions addObject:[UIAction actionWithTitle:LOC(@"InteractionReminder_Subcribe/Like") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
             if (sponsorSegmentView.editable) {
+                sponsorSegmentView.sponsorSegment.category = @"interaction";
                 [self setupViews];
                 return;
             }
+            [SponsorBlockRequest categoryVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] category:@"interaction" withViewController:self];
         }]];
 
+        [categoryActions addObject:[UIAction actionWithTitle:LOC(@"Unpaid/SelfPromotion") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
             if (sponsorSegmentView.editable) {
                 sponsorSegmentView.sponsorSegment.category = @"selfpromo";
                 [self setupViews];
@@ -329,6 +346,7 @@
             [SponsorBlockRequest categoryVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] category:@"selfpromo" withViewController:self];
         }]];
 
+        [categoryActions addObject:[UIAction actionWithTitle:LOC(@"Non-MusicSection") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
             if (sponsorSegmentView.editable) {
                 sponsorSegmentView.sponsorSegment.category = @"music_offtopic";
                 [self setupViews];
@@ -338,6 +356,7 @@
         }]];
         NSMutableArray* actions = [NSMutableArray array];
         if (sponsorSegmentView.editable) {
+            [actions addObject:[UIAction actionWithTitle:LOC(@"EditStartTime") image:[UIImage systemImageNamed:@"arrow.left.to.line"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
                 UIAlertController *alert = [UIAlertController alertControllerWithTitle:LOC(@"Edit") message:LOC(@"EditStartTime_Desc") preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:LOC(@"OK") style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction * action) {
@@ -363,6 +382,7 @@
                 [self presentViewController:alert animated:YES completion:nil];
             }]];
             
+            [actions addObject:[UIAction actionWithTitle:LOC(@"EditEndTime") image:[UIImage systemImageNamed:@"arrow.right.to.line"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
                 UIAlertController *alert = [UIAlertController alertControllerWithTitle:LOC(@"Edit") message:LOC(@"EditEndTime_Desc") preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:LOC(@"OK") style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction * action) {
@@ -388,20 +408,27 @@
                 [self presentViewController:alert animated:YES completion:nil];
             }]];
             
+            UIMenu *categoriesMenu = [UIMenu menuWithTitle:LOC(@"EditCategory") image:[UIImage systemImageNamed:@"square.grid.2x2"] identifier:nil options:0 children:categoryActions];
             [actions addObject:categoriesMenu];
+            [actions addObject:[UIAction actionWithTitle:LOC(@"Delete") image:[UIImage systemImageNamed:@"trash"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
                 [self.playerViewController.userSkipSegments removeObject:sponsorSegmentView.sponsorSegment];
                 [self setupViews];
             }]];
             
+            UIMenu* menu = [UIMenu menuWithTitle:LOC(@"EditSegment") children:actions];
             return menu;
         }
         else {
+            [actions addObject:[UIAction actionWithTitle:LOC(@"Upvote") image:[UIImage systemImageNamed:@"hand.thumbsup.fill"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
                 [SponsorBlockRequest normalVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] type:YES withViewController:self];
             }]];
             
+            [actions addObject:[UIAction actionWithTitle:LOC(@"Downvote") image:[UIImage systemImageNamed:@"hand.thumbsdown.fill"] identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
                 [SponsorBlockRequest normalVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] type:NO withViewController:self];
             }]];
             
+            UIMenu *categoriesMenu = [UIMenu menuWithTitle:LOC(@"VoteToChangeCategory") image:[UIImage systemImageNamed:@"square.grid.2x2"] identifier:nil options:0 children:categoryActions];
+            UIMenu* menu = [UIMenu menuWithTitle:LOC(@"VoteOnSegment") children:[actions arrayByAddingObject:categoriesMenu]];
             return menu;
         }
     }];
@@ -409,33 +436,6 @@
 }
 @end
 
-- (void)setupLongPressGesture {
-    UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
-    [self.view addGestureRecognizer:longPressRecognizer];
-}
-
-- (void)handleLongPress:(UILongPressGestureRecognizer *)gesture {
-    if (gesture.state == UIGestureRecognizerStateBegan) {
-        CGPoint location = [gesture locationInView:self.view];
-        // Implement your custom menu or action logic here.
-    }
-}
-
-
-- (void)showCustomMenuAtLocation:(CGPoint)location {
-    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"" message:@"Custom Menu" preferredStyle:UIAlertControllerStyleActionSheet];
-    UIAlertAction *action1 = [UIAlertAction actionWithTitle:@"Option 1" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        // Handle Option 1
-    }];
-    UIAlertAction *action2 = [UIAlertAction actionWithTitle:@"Option 2" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        // Handle Option 2
-    }];
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
-    [alertController addAction:action1];
-    [alertController addAction:action2];
-    [alertController addAction:cancelAction];
-    [self presentViewController:alertController animated:YES completion:nil];
-}
 
 
 - (NSString *)getDocumentsDirectory {
@@ -453,61 +453,10 @@
     return settings;
 }
 
-
-- (void)showCustomMenuAtLocation:(CGPoint)location {
-    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"" message:@"Custom Menu" preferredStyle:UIAlertControllerStyleActionSheet];
-    UIAlertAction *option1 = [UIAlertAction actionWithTitle:@"Option 1" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        // Handle Option 1
-    }];
-    UIAlertAction *option2 = [UIAlertAction actionWithTitle:@"Option 2" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        // Handle Option 2
-    }];
-    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
-    [alertController addAction:option1];
-    [alertController addAction:option2];
-    [alertController addAction:cancel];
-    [self presentViewController:alertController animated:YES completion:nil];
-}
-
-
-- (void)setupLongPressGestureForSponsorSegmentViews {
-    for (UIView *sponsorSegmentView in self.sponsorSegmentViews) {
-        UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
-        [sponsorSegmentView addGestureRecognizer:longPressRecognizer];
-    }
-}
-
-- (void)handleLongPress:(UILongPressGestureRecognizer *)gesture {
-    if (gesture.state == UIGestureRecognizerStateBegan) {
-        CGPoint location = [gesture locationInView:gesture.view];
-        [self showCustomMenuAtLocation:location];
-    }
-}
-
-
-- (UIImage *)cancelImage {
-    // Replace with a static image named 'cancel.png' from the app bundle
-    return [UIImage imageNamed:@"cancel"];
-}
 
 
 @implementation SponsorBlockViewController
 
-- (NSString *)getDocumentsDirectory {
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    return [paths firstObject];
-}
-
-- (NSMutableDictionary *)loadSettingsFromPlist {
-    NSString *documentsDirectory = [self getDocumentsDirectory];
-    NSString *path = [documentsDirectory stringByAppendingPathComponent:@"iSponsorBlock.plist"];
-    NSMutableDictionary *settings = [NSMutableDictionary dictionaryWithContentsOfFile:path];
-    if (!settings) {
-        settings = [NSMutableDictionary dictionary];
-    }
-    return settings;
-}
-
 - (void)setupLongPressGestureForSponsorSegmentViews {
     for (UIView *sponsorSegmentView in self.sponsorSegmentViews) {
         UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
@@ -521,40 +470,6 @@
         [self showCustomMenuAtLocation:location];
     }
 }
-
-- (void)showCustomMenuAtLocation:(CGPoint)location {
-    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"" message:@"Custom Menu" preferredStyle:UIAlertControllerStyleActionSheet];
-    UIAlertAction *option1 = [UIAlertAction actionWithTitle:@"Option 1" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        // Handle Option 1
-    }];
-    UIAlertAction *option2 = [UIAlertAction actionWithTitle:@"Option 2" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        // Handle Option 2
-    }];
-    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
-    [alertController addAction:option1];
-    [alertController addAction:option2];
-    [alertController addAction:cancel];
-    [self presentViewController:alertController animated:YES completion:nil];
-}
-
-@end
-
-
-- (NSString *)getDocumentsDirectory {
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    return [paths firstObject];
-}
-
-- (NSMutableDictionary *)loadSettingsFromPlist {
-    NSString *documentsDirectory = [self getDocumentsDirectory];
-    NSString *path = [documentsDirectory stringByAppendingPathComponent:@"iSponsorBlock.plist"];
-    NSMutableDictionary *settings = [NSMutableDictionary dictionaryWithContentsOfFile:path];
-    if (!settings) {
-        settings = [NSMutableDictionary dictionary];
-    }
-    return settings;
-}
-
 
 - (void)showCustomMenuAtLocation:(CGPoint)location {
     UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"" message:@"Custom Menu" preferredStyle:UIAlertControllerStyleActionSheet];
@@ -567,21 +482,22 @@
     [self presentViewController:alertController animated:YES completion:nil];
 }
 
-
-@implementation SponsorBlockViewController
-
-- (void)setupLongPressGestureForSponsorSegmentViews {
-    for (UIView *sponsorSegmentView in self.sponsorSegmentViews) {
-        UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
-        [sponsorSegmentView addGestureRecognizer:longPressRecognizer];
-    }
-}
-
-- (void)handleLongPress:(UILongPressGestureRecognizer *)gesture {
-    if (gesture.state == UIGestureRecognizerStateBegan) {
-        CGPoint location = [gesture locationInView:gesture.view];
-        [self showCustomMenuAtLocation:location];
-    }
-}
-
 @end
+
+
+
+- (void)handleSponsorSegment:(id)sponsorSegmentView {
+    NSMutableDictionary *settings = [self loadSettingsFromPlist];
+    if (settings && [settings objectForKey:@"userID"]) {
+        if ([sponsorSegmentView respondsToSelector:@selector(isEditable)] && sponsorSegmentView.isEditable) {
+            NSString *userID = [settings objectForKey:@"userID"];
+            [self performActionForSegment:sponsorSegmentView userID:userID category:@"sponsor"];
+        }
+    }
+}
+
+- (void)performActionForSegment:(id)sponsorSegmentView userID:(NSString *)userID category:(NSString *)category {
+    // Placeholder logic for action
+    NSLog(@"Performing action for category: %@", category);
+}
+
