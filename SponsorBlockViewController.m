@@ -284,7 +284,6 @@
 }
 
 
-    SponsorSegmentView *sponsorSegmentView = interaction.view;
 
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *documentsDirectory = [paths objectAtIndex:0];
@@ -292,9 +291,6 @@
     NSMutableDictionary *settings = [NSMutableDictionary dictionary];
     [settings addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:path]];
 
-    previewProvider:nil
-        NSMutableArray *categoryActions = [NSMutableArray array];
-        [categoryActions addObject:[UIAction actionWithTitle:LOC(@"Sponsor") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
             if (sponsorSegmentView.editable) {
                 sponsorSegmentView.sponsorSegment.category = @"sponsor";
                 [self setupViews];
@@ -303,7 +299,6 @@
             [SponsorBlockRequest categoryVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] category:@"sponsor" withViewController:self];
         }]];
 
-        [categoryActions addObject:[UIAction actionWithTitle:LOC(@"Intermission/IntroAnimation") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
             if (sponsorSegmentView.editable) {
                 sponsorSegmentView.sponsorSegment.category = @"intro";
                 [self setupViews];
@@ -312,7 +307,6 @@
             [SponsorBlockRequest categoryVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] category:@"intro" withViewController:self];
         }]];
 
-        [categoryActions addObject:[UIAction actionWithTitle:LOC(@"Outro") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
             if (sponsorSegmentView.editable) {
                 sponsorSegmentView.sponsorSegment.category = @"outro";
                 [self setupViews];
@@ -321,16 +315,12 @@
             [SponsorBlockRequest categoryVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] category:@"outro" withViewController:self];
         }]];
 
-        [categoryActions addObject:[UIAction actionWithTitle:LOC(@"InteractionReminder_Subcribe/Like") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
             if (sponsorSegmentView.editable) {
-                sponsorSegmentView.sponsorSegment.category = @"interaction";
                 [self setupViews];
                 return;
             }
-            [SponsorBlockRequest categoryVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] category:@"interaction" withViewController:self];
         }]];
 
-        [categoryActions addObject:[UIAction actionWithTitle:LOC(@"Unpaid/SelfPromotion") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
             if (sponsorSegmentView.editable) {
                 sponsorSegmentView.sponsorSegment.category = @"selfpromo";
                 [self setupViews];
@@ -339,7 +329,6 @@
             [SponsorBlockRequest categoryVoteForSegment:sponsorSegmentView.sponsorSegment userID:[settings objectForKey:@"userID"] category:@"selfpromo" withViewController:self];
         }]];
 
-        [categoryActions addObject:[UIAction actionWithTitle:LOC(@"Non-MusicSection") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
             if (sponsorSegmentView.editable) {
                 sponsorSegmentView.sponsorSegment.category = @"music_offtopic";
                 [self setupViews];
@@ -546,6 +535,53 @@
     [alertController addAction:option2];
     [alertController addAction:cancel];
     [self presentViewController:alertController animated:YES completion:nil];
+}
+
+@end
+
+
+- (NSString *)getDocumentsDirectory {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    return [paths firstObject];
+}
+
+- (NSMutableDictionary *)loadSettingsFromPlist {
+    NSString *documentsDirectory = [self getDocumentsDirectory];
+    NSString *path = [documentsDirectory stringByAppendingPathComponent:@"iSponsorBlock.plist"];
+    NSMutableDictionary *settings = [NSMutableDictionary dictionaryWithContentsOfFile:path];
+    if (!settings) {
+        settings = [NSMutableDictionary dictionary];
+    }
+    return settings;
+}
+
+
+- (void)showCustomMenuAtLocation:(CGPoint)location {
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"" message:@"Custom Menu" preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertAction *sponsorAction = [UIAlertAction actionWithTitle:@"Sponsor" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        NSLog(@"Sponsor selected");
+    }];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
+    [alertController addAction:sponsorAction];
+    [alertController addAction:cancelAction];
+    [self presentViewController:alertController animated:YES completion:nil];
+}
+
+
+@implementation SponsorBlockViewController
+
+- (void)setupLongPressGestureForSponsorSegmentViews {
+    for (UIView *sponsorSegmentView in self.sponsorSegmentViews) {
+        UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
+        [sponsorSegmentView addGestureRecognizer:longPressRecognizer];
+    }
+}
+
+- (void)handleLongPress:(UILongPressGestureRecognizer *)gesture {
+    if (gesture.state == UIGestureRecognizerStateBegan) {
+        CGPoint location = [gesture locationInView:gesture.view];
+        [self showCustomMenuAtLocation:location];
+    }
 }
 
 @end
