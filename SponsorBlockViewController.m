@@ -106,7 +106,6 @@
         
         for (int i = 0; i < self.sponsorSegmentViews.count; i++) {
             [self.segmentsInDatabaseLabel addSubview:self.sponsorSegmentViews[i]];
-            [self.sponsorSegmentViews[i] addInteraction:[[UIContextMenuInteraction alloc] initWithDelegate:self]];
             
             self.sponsorSegmentViews[i].translatesAutoresizingMaskIntoConstraints = NO;
             [self.sponsorSegmentViews[i].widthAnchor constraintEqualToConstant:playerView.frame.size.width/self.sponsorSegmentViews.count-10].active = YES;
@@ -137,7 +136,6 @@
         self.userSponsorSegmentViews = [self segmentViewsForSegments:self.playerViewController.userSkipSegments editable:YES];
         for (int i = 0; i < self.userSponsorSegmentViews.count; i++) {
             [self.userSegmentsLabel addSubview:self.userSponsorSegmentViews[i]];
-            [self.userSponsorSegmentViews[i] addInteraction:[[UIContextMenuInteraction alloc] initWithDelegate:self]];
             
             self.userSponsorSegmentViews[i].translatesAutoresizingMaskIntoConstraints = NO;
             [self.userSponsorSegmentViews[i].widthAnchor constraintEqualToConstant:playerView.frame.size.width/self.userSponsorSegmentViews.count-10].active = YES;
@@ -286,7 +284,7 @@
 }
 
 
-                        configurationForMenuAtLocation:(CGPoint)location {
+                        configurationForMenuAtLocation:(CGPoint)location;
     SponsorSegmentView *sponsorSegmentView = interaction.view;
 
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
