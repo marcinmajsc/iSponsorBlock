@@ -42,7 +42,7 @@
 
     UIBarButtonItem *dismissButton;
 
-    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"xmark"]
+    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"xmark"]
                                                      style:UIBarButtonItemStylePlain
                                                     target:self
                                                     action:@selector(dismissButtonTapped:)];
@@ -56,11 +56,11 @@
     self.settings = [NSMutableDictionary dictionary];
     [self.settings addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:self.settingsPath]];
 
-    self.view.backgroundColor = UIColor.systemBackgroundColor;
+    self.view.backgroundColor = UIColor.backgroundColor;
 
     //detects if device is an se gen 1 or not, crude fix for text getting cut off
     if ([UIScreen mainScreen].bounds.size.width > 320) {
-        self.tableView = [[UITableView alloc] initWithFrame:self.view.frame style:UITableViewStyleInsetGrouped];
+        self.tableView = [[UITableView alloc] initWithFrame:self.view.frame style:UITableViewStyleGrouped];
     }
     else {
         self.tableView = [[UITableView alloc] initWithFrame:self.view.frame style:UITableViewStyleGrouped];
@@ -267,7 +267,7 @@
     if (indexPath.section == 17) {
         UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"SponsorBlockDonationCell"];
         cell.textLabel.text = indexPath.row == 0 ? LOC(@"DonateOnVenmo") : LOC(@"DonateOnPayPal");
-        cell.imageView.image = [UIImage systemImageNamed:@"dollarsign.circle.fill"];
+        cell.imageView.image = [UIImage imageNamed:@"dollarsign.circle.fill"];
         return cell;
     }
     return nil;
