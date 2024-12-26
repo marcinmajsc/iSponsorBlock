@@ -284,8 +284,6 @@
 }
 
 
-                        configurationForMenuAtLocation:(CGPoint)location;
-    SponsorSegmentView *sponsorSegmentView = interaction.view;
 
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *documentsDirectory = [paths objectAtIndex:0];
@@ -293,7 +291,6 @@
     NSMutableDictionary *settings = [NSMutableDictionary dictionary];
     [settings addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:path]];
 
-    previewProvider:nil
     actionProvider:^UIMenu* _Nullable(NSArray<UIMenuElement*>* _Nonnull suggestedActions) {
         NSMutableArray *categoryActions = [NSMutableArray array];
         [categoryActions addObject:[UIAction actionWithTitle:LOC(@"Sponsor") image:nil identifier:nil handler:^(__kindof UIAction* _Nonnull action) {
@@ -457,4 +454,35 @@
     [alertController addAction:action2];
     [alertController addAction:cancelAction];
     [self presentViewController:alertController animated:YES completion:nil];
+}
+
+
+- (void)setupLongPressGestureForSponsorSegmentViews {
+    for (UIView *sponsorSegmentView in self.sponsorSegmentViews) {
+        UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
+        [sponsorSegmentView addGestureRecognizer:longPressRecognizer];
+    }
+}
+
+- (void)handleLongPress:(UILongPressGestureRecognizer *)gesture {
+    if (gesture.state == UIGestureRecognizerStateBegan) {
+        CGPoint location = [gesture locationInView:gesture.view];
+        [self showCustomMenuAtLocation:location];
+    }
+}
+
+
+- (NSString *)getDocumentsDirectory {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    return [paths objectAtIndex:0];
+}
+
+- (NSMutableDictionary *)loadSettingsFromPlist {
+    NSString *documentsDirectory = [self getDocumentsDirectory];
+    NSString *path = [documentsDirectory stringByAppendingPathComponent:@"iSponsorBlock.plist"];
+    NSMutableDictionary *settings = [NSMutableDictionary dictionaryWithContentsOfFile:path];
+    if (!settings) {
+        settings = [NSMutableDictionary dictionary];
+    }
+    return settings;
 }
